@@ -12,30 +12,26 @@ import yfinance as yf
 
 yf.pdr_override()
 
-class Stock:
-    def ClosingP(stock, start_date, end_date):
+class Stock():
+    def __init__(self, stock, start_date, end_date):
+        self.stock = stock
         stock_data = pd.DataFrame()
         stock_data = yf.download(stock, start = start_date, end = end_date)
-        closing_price = stock_data['Close']
-        return(closing_price)
-    
-    def PltPrice(stock, start_date, end_date): 
-        Stock.ClosingP(stock, start_date, end_date).plot(figsize = (10,8));
-        plt.title(stock+' Price');
+        self.closing_price = stock_data['Close']
+        
+    def PltPrice(self): 
+        self.closing_price.plot(figsize = (10,6));
+        plt.title(self.stock+' Price');
         plt.show();
     
-    def PltLogReturns(stock, start_date, end_date):
-        closing_price = Stock.ClosingP(stock, start_date, end_date)
-        log_returns = np.log(1+closing_price.pct_change())
-        plt.title(stock+' Log Returns');
-        log_returns.plot();
+    def PltLogReturns(self):
+        log_returns = np.log(1+self.closing_price.pct_change())
+        plt.title(self.stock+' Log Returns');
+        log_returns.plot(figsize = (10,6));
         plt.show();
         
-        
-    def Monte(stock, start_date, end_date):
-        closing_price = Stock.ClosingP(stock, start_date, end_date)
-        log_returns = np.log(1+closing_price.pct_change())
-        
+    def Monte(self):
+        log_returns = np.log(1+self.closing_price.pct_change())
         #drift
         u = log_returns.mean()
         var = log_returns.var()
@@ -49,28 +45,29 @@ class Stock:
         iterations = 300
         daily_returns = np.exp(np.array(drift)+np.array(stdev)*norm.ppf(np.random.rand(t_intervals,iterations)))
        
-        s0 = closing_price.iloc[-1]
+        s0 = self.closing_price.iloc[-1]
         price_list = np.zeros_like(daily_returns)
         price_list[0] = s0
         
         for t in range (1,t_intervals):
             price_list[t] = price_list[t-1]*daily_returns[t]
-        
+            
+        plt.figure(figsize = (10,6));
+        plt.plot(price_list);
+        plt.title(self.stock+' Stock Predictions');
+        plt.show();
+                
         print('Expected price: ', round(np.mean(price_list),2))
         print('Quantile (5%) ',np.percentile((price_list),5))
         print('Quantile (95%) ',np.percentile((price_list),95))  
-                  
-        plt.figure(figsize = (10,6));
-        plt.plot(price_list);
-        plt.title(stock+' Stock Predictions');
-        plt.show();
+        
+ORCL = Stock('ORCL', '2012-01-01', '2022-04-27')
+MELI = Stock('MELI', '2012-01-01', '2022-04-27')
 
+ORCL.PltPrice()
+ORCL.PltLogReturns()
+ORCL.Monte()
 
-
-
-
-Stock.PltLogReturns('ORCL', '2012-01-01', '2022-04-27')
-
-
-
-
+MELI.PltPrice()
+MELI.PltLogReturns()
+MELI.Monte()
