@@ -1,1 +1,1 @@
-![Alt text](/orcle_monty.jpg "Orcle Monty Image")
+![Alt text](orcle_monty.jpg "Orcle Monty Image")
